@@ -1,20 +1,15 @@
-# Item Reduction Analysis #
+# Confirmatory Factor Analyses subscales #
 ## Performed on 4 relationship types (P-P, P-C, C-P, C-C) ##
+## Performed separately on the candidate items of the financial, practical
+## and emotional subscale ##
 
-library(ggplot2)
-library(psych)
 library(lavaan)
-library(egg)
-library(psych)
-library(corrplot)
-library(car)
-library(factoextra)
-library(writexl)
+library(semTools)
 library(semPlot)
+library(psych)
 
 
 finsol_data_efa<- read.table("../Data/Preprocessed/finsol_item_asampling_efa.txt", quote="\"", comment.char="")
-
 #Reverse score items
 finsol_data_efa$Q24<-(100-finsol_data_efa$Q24)
 finsol_data_efa$Q27<-(100-finsol_data_efa$Q27)
@@ -27,15 +22,13 @@ finsol_datrecodea_efa<-Recode(as.matrix(finsol_data_efa[,-1]), "0:10=1; 11:20=2;
               61:70=7; 71:80=8; 81:90=9; 91:100=10")
 finsol_datrecodea_efa<-as.data.frame(finsol_datrecodea_efa)
 finsol_datrecodea_efa<-cbind(finsol_data_efa[,1],finsol_datrecodea_efa)
+# Perform one-factor CFA for relationship type P-P
+finsol_A<- ' f =~ Q21 + Q22 + Q24 + Q25 '
+fit <- cfa(finsol_A, data=finsol_datrecodea_efa,estimator="MLR",missing="FIML")
+summary(fit,fit.measures=TRUE,standardized = TRUE)
+# Calculate reliability indices
+semTools::reliability(fit)
+psych::alpha(finsol_datrecodea_efa[,c(2,3,5,6)]) 
 
-# Plot distributions
-for (i in c(2:11)){
-  hist(finsol_datrecodea_efa[,i],xlim = c(1,10),breaks=1*(1:10), main = colnames(finsol_datrecodea_efa)[i])  
-}
-
-#Calculate descriptives, including Cronbach's alpha on all candidate items
-psych::alpha(finsol_datrecodea_efa[,c(2:11)]) 
-psych::describe(finsol_datrecodea_efa[,c(2:11)]) 
-
-
-## Repeat script for B, C , D  ##
+## Repeat process 12 times (4 relationship types on 3 dimensions
+## functional solidarity)
